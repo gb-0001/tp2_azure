@@ -12,6 +12,7 @@ TPL="azdeploy.json"
 echo "" > trace.log
 
 
+
 # Creation groupe ressources
 echo "---- creation groupe ressources -----" 1>>trace.log 2>&1
 if [ $(az group exists --name $RESSOURCEGRPNAME) = false ]; then
@@ -20,12 +21,13 @@ fi
 echo "" 1>>trace.log 2>&1
 
 
+#Creation de la cle ssh
+ssh-keygen -m PEM -t rsa -b 4096 -N '' -f id_rsa
 
 
 #deploiment tpl
 az deployment group create \
-  --Name dpltp2gb \
-  --adminPasswordOrKey
+  --name dpltp2gb \
   --resource-group $RESSOURCEGRPNAME \
   --template-file $TPL \
-  --parameters vmName=$VMNAME sshPublicKey=C:\Users\ib\.ssh\id_rsa
+  --parameters vmName=$VMNAME sshPublicKey=id_rsa.pub 1>>trace.log 2>&1

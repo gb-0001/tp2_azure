@@ -28,6 +28,7 @@
             }
         },
         "adminPasswordOrKey": {
+            "defaultValue": "password",
             "type": "SecureString",
             "metadata": {
                 "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
@@ -67,6 +68,20 @@
                 "description": "The size of the VM"
             }
         },
+        "natgatewayname": {
+            "defaultValue": "myNATgateway",
+            "type": "String",
+            "metadata": {
+              "description": "Name of the NAT gateway"
+            }
+        },
+        "publicipprefixname": {
+            "defaultValue": "myPublicIPPrefix",
+            "type": "String",
+            "metadata": {
+              "description": "Name of the NAT gateway public IP"
+            }
+        },
         "virtualNetworkName": {
             "defaultValue": "vNet",
             "type": "String",
@@ -100,8 +115,7 @@
             "metadata": {
                 "description": "ssh key file"
             }
-        },
-
+        }
     },
     "variables": {
         "publicIPAddressName": "[format('{0}PublicIP', parameters('vmName'))]",
@@ -109,18 +123,18 @@
         "osDiskType": "Standard_LRS",
         "subnetAddressPrefix": "10.77.87.0/24",
         "addressPrefix": "10.77.0.0/16",
+        "customData": "[parameters('cloudiniturl')]",
         "linuxConfiguration": {
             "disablePasswordAuthentication": true,
             "ssh": {
-                "publicKeys": [
-                    {
-                        "path": "[format('/home/{0}/.ssh/authorized_keys', parameters('adminUsername'))]",
-                        "keyData": "[parameters('adminPasswordOrKey')]"
-                    }
-                ]
+              "publicKeys": [
+                {
+                  "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                  "keyData": "[parameters('adminPasswordOrKey')]"
+                }
+              ]
             }
-        },
-        "customData": "[uri(parameters('cloudiniturl')]"
+          }
     },
     "functions": [],
     "resources": [
@@ -172,7 +186,9 @@
                             "sourcePortRange": "*",
                             "destinationAddressPrefix": "*",
                             "destinationPortRange": "22"
-                        },
+                        }
+                    },
+                    {
                         "name": "flask",
                         "properties": {
                             "priority": 1010,
@@ -184,6 +200,7 @@
                             "destinationAddressPrefix": "*",
                             "destinationPortRange": "5000"
                         }
+
                     }
                 ]
             }
@@ -214,6 +231,45 @@
                 "privateLinkServiceNetworkPolicies": "Enabled"
             }
         },
+        {
+            "type": "Microsoft.Network/publicIPPrefixes",
+            "apiVersion": "2020-06-01",
+            "name": "[parameters('publicipprefixname')]",
+            "location": "[parameters('location')]",
+            "sku": {
+              "name": "Standard"
+            },
+            "properties": {
+              "prefixLength": 31,
+              "publicIPAddressVersion": "IPv4"
+            }
+          },
+        {
+            "type": "Microsoft.Network/natGateways",
+            "apiVersion": "2020-06-01",
+            "name": "[parameters('natgatewayname')]",
+            "location": "[parameters('location')]",
+            "sku": {
+              "name": "Standard"
+            },
+            "dependsOn": [
+              "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
+              "[resourceId('Microsoft.Network/publicIPPrefixes', parameters('publicipprefixname'))]"
+            ],
+            "properties": {
+              "idleTimeoutInMinutes": 4,
+              "publicIpAddresses": [
+                {
+                  "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+                }
+              ],
+              "publicIpPrefixes": [
+                {
+                  "id": "[resourceId('Microsoft.Network/publicIPPrefixes', parameters('publicipprefixname'))]"
+                }
+              ]
+            }
+          },
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2020-06-01",
@@ -267,15 +323,9 @@
                 "osProfile": {
                     "computerName": "[parameters('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "sshProfile": {
-                        "publicKeys": [
-                          {
-                            "certificateData": "[parameters('sshPublicKey')]"
-                          }
-                        ]
-                      },
+                    "adminPassword": "[parameters('adminPasswordOrKey')]",
                     "customData": "[base64(variables('customData'))]",
-                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), null(), variables('linuxConfiguration'))]"
+                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
                 }
             }
         }
