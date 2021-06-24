@@ -24,10 +24,11 @@ echo "" 1>>trace.log 2>&1
 #Creation de la cle ssh
 ssh-keygen -m PEM -t rsa -b 4096 -N '' -f id_rsa
 
+MYPWD=cat key.txt | awk 1 ORS=''
 
 #deploiment tpl
 az deployment group create \
   --name dpltp2gb \
   --resource-group $RESSOURCEGRPNAME \
   --template-file $TPL \
-  --parameters vmName=$VMNAME sshPublicKey=id_rsa.pub 1>>trace.log 2>&1
+  --parameters vmName=$VMNAME adminPasswordOrKey=$MYPWD sshPublicKey=id_rsa.pub 1>>trace.log 2>&1
