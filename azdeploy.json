@@ -250,7 +250,7 @@
             "name": "[parameters('natgatewayname')]",
             "location": "[parameters('location')]",
             "sku": {
-              "name": "Standard"
+              "name": "Basic"
             },
             "dependsOn": [
               "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
