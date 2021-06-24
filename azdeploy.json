@@ -276,7 +276,7 @@
             "name": "[variables('publicIPAddressName')]",
             "location": "[parameters('location')]",
             "sku": {
-                "name": "Standard"
+                "name": "Basic"
             },
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
