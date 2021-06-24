@@ -1,0 +1,14 @@
+
+---- creation groupe ressources -----
+{
+  "id": "/subscriptions/873000fa-a741-48e5-8ae7-41c7937c47c3/resourceGroups/tp2-gerald",
+  "location": "ukwest",
+  "managedBy": null,
+  "name": "tp2-gerald",
+  "properties": {
+    "provisioningState": "Succeeded"
+  },
+  "tags": null,
+  "type": "Microsoft.Resources/resourceGroups"
+}
+
