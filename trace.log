@@ -12,4 +12,4 @@
   "type": "Microsoft.Resources/resourceGroups"
 }
 
-ERROR: Long-running operation wait cancelled.  
+ERROR: (DeploymentFailed) At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/DeployOperations for usage details.
